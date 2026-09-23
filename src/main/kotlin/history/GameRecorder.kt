@@ -7,13 +7,13 @@ class GameRecorder(
     private val repository: Repository
 ) : GameHistory {
 
-    private val events = mutableListOf<GameEvent>()
     private var mode: String = ""
     private var player1: String = ""
     private var player2: String = ""
 
     override fun recordEvent(event: GameEvent) {
-        events.add(event)
+        // Метод оставлен для совместимости с интерфейсом, но не используется
+        // Сохранение происходит целиком в конце игры через saveGame()
     }
 
     override fun saveGame(events: List<GameEvent>, winner: String) {
@@ -24,7 +24,6 @@ class GameRecorder(
             winner = winner,
             events = events
         )
-        this.events.clear()
     }
 
     override fun loadGame(id: Int): List<GameEvent>? {

@@ -1,0 +1,29 @@
+.root { -fx-background-color: white; -fx-font-family: "Segoe UI", "Arial", sans-serif; }
+.label { -fx-text-fill: #2c3e50; }
+.title { -fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #1a2530; }
+.subtitle { -fx-font-size: 15px; -fx-text-fill: #5a6a78; }
+
+.button {
+    -fx-background-color: white; -fx-text-fill: #2c3e50;
+    -fx-border-color: #d0d7de; -fx-border-radius: 8; -fx-background-radius: 8;
+    -fx-padding: 9 20; -fx-font-size: 14px; -fx-cursor: hand;
+}
+.button:hover { -fx-background-color: #f3f6f9; }
+.button:disabled { -fx-opacity: 0.45; -fx-cursor: default; }
+.primary { -fx-background-color: #3498db; -fx-text-fill: white; -fx-border-color: transparent; }
+.primary:hover { -fx-background-color: #2b8ac6; }
+.danger { -fx-background-color: #e74c3c; -fx-text-fill: white; -fx-border-color: transparent; }
+
+.hero-card {
+    -fx-background-color: #fafbfc; -fx-border-color: #e1e6ea;
+    -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 10;
+}
+.hero-card:hover { -fx-border-color: #b6c3cf; }
+.selected { -fx-border-color: #3498db; -fx-border-width: 2.5; -fx-background-color: #ebf5fb; }
+.dead { -fx-opacity: 0.35; }
+
+.log {
+    -fx-control-inner-background: #fafbfc; -fx-background-color: #fafbfc;
+    -fx-border-color: #e1e6ea; -fx-border-radius: 6; -fx-background-radius: 6;
+    -fx-font-family: "Consolas", monospace; -fx-font-size: 12px;
+}

@@ -36,7 +36,7 @@ class UltimateAction : Action {
                     allies.forEach { hero ->
                         hero.isDefending = true
                         hero.defenceBonus = hero.defence * 3
-                        println("  ${hero.type}: защита увеличена до ${hero.defence + hero.defenceBonus}")
+                        println("${hero.type}: защита увеличена до ${hero.defence + hero.defenceBonus}")
                     }
                 }
             }
