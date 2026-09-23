@@ -7,9 +7,9 @@ import main.kotlin.actions.AttackAction
 import main.kotlin.actions.DefendAction
 
 class ClassicMode(
-    private val ui: UserInterface,
-    private val engine: GameInterface
-) : GameMode {
+    ui: UserInterface,
+    engine: GameInterface
+) : GameMode(ui, engine) {
 
     // доступны только 3 базовых героя
     private val availableHeroes = listOf(
@@ -18,80 +18,33 @@ class ClassicMode(
         Archer("")
     )
 
-    private lateinit var player1: Player
-    private lateinit var player2: Player
-
     override fun getAvailableHeroes(): List<Character> = availableHeroes
     override fun canUseUltimate(): Boolean = false
     override fun isTeamMode(): Boolean = false
 
-    override fun startGame(p1: Player, p2: Player) {
-        player1 = p1
-        player2 = p2
-
+    override fun showModeInfo() {
         ui.showMessage("\n=== Классический режим ===")
+    }
 
+    override fun selectHeroesForPlayers(p1: Player, p2: Player) {
         val usedHeroes = mutableListOf<String>()
 
         ui.showMessage("\n${p1.name}, выберите героя:")
-        val hero1 = selectHero(p1, usedHeroes)
-        p1.heroes.add(hero1)
+        val hero1 = selectHeroFromList(p1, availableHeroes, usedHeroes)
+        if (hero1 != null) {
+            p1.heroes.add(hero1)
+            usedHeroes.add(hero1.type)
+        }
 
         ui.showMessage("\n${p2.name}, выберите героя:")
-        val hero2 = selectHero(p2, usedHeroes)
-        p2.heroes.add(hero2)
-
-        ui.showMessage("\nБой начинается!")
-        ui.showMessage("${p1.name}: ${hero1.type} (HP: ${hero1.health})")
-        ui.showMessage("${p2.name}: ${hero2.type} (HP: ${hero2.health})")
-
-        engine.startGame(p1, p2)
-        // поочередные ходы до победы одного из игроков
-        while (!engine.isGameOver()) {
-            processTurn(p1, p2)
-            if (engine.isGameOver()) break
-            processTurn(p2, p1)
+        val hero2 = selectHeroFromList(p2, availableHeroes, usedHeroes)
+        if (hero2 != null) {
+            p2.heroes.add(hero2)
+            usedHeroes.add(hero2.type)
         }
-
-        ui.showMessage("\nПобедитель: ${engine.getCurrentState().winner ?: "никто"}!")
     }
 
-    private fun selectHero(player: Player, usedHeroes: MutableList<String>): Character {
-        ui.showHeroes(availableHeroes)
-
-        var choice: Int? = null
-        var selectedHero: Character? = null
-
-        while (selectedHero == null) {
-            choice = ui.readInt("Выберите номер героя:")
-
-            if (choice == null || choice !in 1..availableHeroes.size) {
-                ui.showMessage("Неверный номер! Выберите от 1 до ${availableHeroes.size}")
-                continue
-            }
-
-            val template = availableHeroes[choice - 1]
-            val heroName = template.type
-
-            if (heroName in usedHeroes) {
-                ui.showMessage("Герой '$heroName' уже выбран! Выберите другого.")
-                continue
-            }
-
-            selectedHero = when (template) {
-                is Knight -> Knight("${player.name}'s герой")
-                is Mage -> Mage("${player.name}'s герой")
-                is Archer -> Archer("${player.name}'s герой")
-                else -> Knight("${player.name}'s герой")
-            }
-
-            usedHeroes.add(heroName)
-        }
-
-        return selectedHero
-    }
-
-    private fun processTurn(actor: Player, target: Player) {
+    override fun processTurn(actor: Player, target: Player) {
         val state = engine.getCurrentState()
         ui.showBattleStatus(player1, player2, state.turn, actor)
 

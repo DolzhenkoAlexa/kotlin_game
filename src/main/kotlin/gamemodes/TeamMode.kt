@@ -6,9 +6,9 @@ import main.kotlin.ui.UserInterface
 import main.kotlin.actions.*
 
 class TeamMode(
-    private val ui: UserInterface,
-    private val engine: GameInterface
-) : GameMode {
+    ui: UserInterface,
+    engine: GameInterface
+) : GameMode(ui, engine) {
 
     // Доступные герои для командного режима
     private val allHeroes = listOf(
@@ -20,37 +20,36 @@ class TeamMode(
         Necromancer("")
     )
 
-    private lateinit var player1: Player
-    private lateinit var player2: Player
     private var roundNumber = 1
 
     override fun getAvailableHeroes(): List<Character> = allHeroes
     override fun canUseUltimate(): Boolean = true
     override fun isTeamMode(): Boolean = true
 
-    override fun startGame(p1: Player, p2: Player) {
-        player1 = p1
-        player2 = p2
-
+    override fun showModeInfo() {
         ui.showMessage("\n=== Командный режим ===")
         ui.showMessage("Каждый игрок выбирает 3 героев по очереди")
         ui.showMessage("Сверхспособности доступны 1 раз за игру в любой момент")
+    }
 
+    override fun selectHeroesForPlayers(p1: Player, p2: Player) {
         draftHeroes(p1, p2)
 
         ui.showMessage("\nКоманды сформированы!")
         showTeams()
+    }
 
-        engine.startGame(p1, p2)
+    override fun showGameStart() {
+        ui.showMessage("\nБой начинается!")
+    }
 
+    override fun runGameLoop() {
         while (!engine.isGameOver()) {
-            processTurn(p1, p2)
+            processTurn(player1, player2)
             if (engine.isGameOver()) break
-            processTurn(p2, p1)
+            processTurn(player2, player1)
             roundNumber++
         }
-
-        ui.showMessage("\nПобедитель: ${engine.getCurrentState().winner ?: "никто"}!")
     }
 
     private fun draftHeroes(p1: Player, p2: Player) {
@@ -65,24 +64,25 @@ class TeamMode(
             val playerName = currentPlayer.name
 
             ui.showMessage("\n${playerName} выбирает героя (осталось ${availableHeroes.size}):")
-            val hero = selectHero(currentPlayer, availableHeroes, usedHeroes)
-            currentPlayer.heroes.add(hero)
-            ui.showMessage("${playerName} выбрал: ${hero.type}")
+            val hero = selectTeamHero(currentPlayer, availableHeroes, usedHeroes)
+            if (hero != null) {
+                currentPlayer.heroes.add(hero)
+                ui.showMessage("${playerName} выбрал: ${hero.type}")
+            }
         }
     }
 
-    private fun selectHero(
+    private fun selectTeamHero(
         player: Player,
         availableHeroes: MutableList<Character>,
         usedHeroes: MutableList<String>
-    ): Character {
+    ): Character? {
         ui.showHeroes(availableHeroes)
 
-        var choice: Int? = null
         var selectedHero: Character? = null
 
         while (selectedHero == null) {
-            choice = ui.readInt("Выберите номер героя:")
+            val choice = ui.readInt("Выберите номер героя:")
 
             if (choice == null || choice !in 1..availableHeroes.size) {
                 ui.showMessage("Неверный номер! Выберите от 1 до ${availableHeroes.size}")
@@ -97,16 +97,7 @@ class TeamMode(
                 continue
             }
 
-            selectedHero = when (template) {
-                is Knight -> Knight("${player.name}'s герой")
-                is Mage -> Mage("${player.name}'s герой")
-                is Archer -> Archer("${player.name}'s герой")
-                is Barbarian -> Barbarian("${player.name}'s герой")
-                is Paladin -> Paladin("${player.name}'s герой")
-                is Necromancer -> Necromancer("${player.name}'s герой")
-                else -> Knight("${player.name}'s герой")
-            }
-
+            selectedHero = createHeroInstance(template, player)
             usedHeroes.add(heroName)
             availableHeroes.remove(template)
         }
@@ -126,7 +117,8 @@ class TeamMode(
         }
     }
 
-    private fun processTurn(actor: Player, target: Player) {
+
+    override fun processTurn(actor: Player, target: Player) {
         val state = engine.getCurrentState()
         val aliveHeroes = actor.getAliveHeroes()
         val enemyHeroes = target.getAliveHeroes()
