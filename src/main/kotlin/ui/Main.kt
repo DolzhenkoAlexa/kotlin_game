@@ -1,14 +1,5 @@
-package main.kotlin
+package main.kotlin.ui
 
-import main.kotlin.history.repository.InMemoryRepository
-import main.kotlin.ui.MenuRouter
-import main.kotlin.ui.UserConsole
-
-fun main() {
-    val repository = InMemoryRepository()
-    val console = UserConsole()
-    val router = MenuRouter(console, repository)
-
-    console.setRouter(router)
-    console.showMainMenu()
+fun main(args: Array<String>) {
+    AppLauncher.run(args)
 }

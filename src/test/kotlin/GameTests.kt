@@ -10,7 +10,6 @@ import main.kotlin.history.repository.InMemoryRepository
 import main.kotlin.history.repository.PlayersStatistics
 import main.kotlin.ui.UserInterface
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.math.roundToInt
 

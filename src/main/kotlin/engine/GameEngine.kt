@@ -11,7 +11,7 @@ class GameEngine(
 
     private var state: GameState? = null
     private var gameOver = false
-    private val events = mutableListOf<GameEvent>()  // ← храним события
+    private val events = mutableListOf<GameEvent>()
 
     override fun startGame(player1: Player, player2: Player) {
         state = GameState(player1, player2, turn = 1)
@@ -20,13 +20,24 @@ class GameEngine(
     }
 
     override fun processTurn(player: Player, action: Action?) {
+        val currentState = state ?: throw IllegalStateException("Игра не запущена")
+
+        val opponent = getOpponent(player)
+
+        // Проверяем победу в начале хода
+        if (!player.hasAliveHeroes()) {
+            gameOver = true
+            state = currentState.copy(winner = opponent.name)
+            println("\n${opponent.name} победил! У ${player.name} нет живых героев!")
+            return
+        }
+
         val actor = player.getAliveHeroes().firstOrNull()
         if (actor == null) {
             println("${player.name}: нет живых героев!")
             return
         }
 
-        val opponent = getOpponent(player)
         val target = opponent.getAliveHeroes().firstOrNull()
 
         if (action == null) {
@@ -37,7 +48,7 @@ class GameEngine(
         action.execute(actor, target)
 
         val event = GameEvent(
-            turnNumber = state!!.turn,
+            turnNumber = currentState.turn,
             playerName = player.name,
             actorType = actor.type,
             actionType = action.javaClass.simpleName,
@@ -49,44 +60,11 @@ class GameEngine(
         events.add(event)
         history?.recordEvent(event)
 
-        state!!.turn++
+        state = currentState.copy(turn = currentState.turn + 1)
 
         if (!opponent.hasAliveHeroes()) {
             gameOver = true
-            state = state!!.copy(winner = player.name)
-            println("\n ${player.name} победил! Все враги повержены!")
-        }
-    }
-
-    override fun processTurnWithTarget(player: Player, action: Action?, actor: Character, target: Character?) {
-        if (action == null) {
-            println("${player.name}: действие не выбрано!")
-            return
-        }
-
-        val healthBefore = target?.health ?: 0  // запоминаем HP до атаки
-        action.execute(actor, target)
-        val healthAfter = target?.health ?: 0  // запоминаем HP после атаки
-
-        val event = GameEvent(
-            turnNumber = state!!.turn,
-            playerName = player.name,
-            actorType = actor.type,
-            actionType = action.javaClass.simpleName,
-            targetType = target?.type,
-            damage = healthBefore - healthAfter,
-            healthBefore = healthBefore,
-            healthAfter = healthAfter
-        )
-        events.add(event)
-        history?.recordEvent(event)
-
-        state!!.turn++
-
-        val opponent = getOpponent(player)
-        if (!opponent.hasAliveHeroes()) {
-            gameOver = true
-            state = state!!.copy(winner = player.name)
+            state = currentState.copy(winner = player.name)
             println("\n ${player.name} победил! Все враги повержены!")
         }
     }
@@ -98,6 +76,7 @@ class GameEngine(
     override fun getEvents(): List<GameEvent> = events.toList()
 
     private fun getOpponent(player: Player): Player {
-        return if (state!!.player1 == player) state!!.player2 else state!!.player1
+        val currentState = state ?: throw IllegalStateException("Игра не запущена")
+        return if (currentState.player1 == player) currentState.player2 else currentState.player1
     }
 }

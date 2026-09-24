@@ -14,16 +14,15 @@ class MenuRouter(
     private val replayer = GameReplayer(ui, repository)
 
     fun startNewGame() {
-        val modeChoice = selectGameMode()
-        val modeName = modeName(modeChoice)
+        val modeType = selectGameMode()
 
         val (player1, player2) = getPlayerNames()
 
         val recorder = GameRecorder(repository)
-        recorder.setGameInfo(modeName, player1.name, player2.name)
+        recorder.setGameInfo(modeType.displayName, player1.name, player2.name)
 
         val engine = GameEngine(recorder)
-        val mode = createGameMode(modeChoice, engine)
+        val mode = createGameMode(modeType, engine)
 
         mode.startGame(player1, player2)
 
@@ -68,7 +67,7 @@ class MenuRouter(
         replayer.replayGame(game.id)
     }
 
-    private fun selectGameMode(): Int? {
+    private fun selectGameMode(): GameModeType {
         while (true) {
             val choice = ui.readInt("""
                 Выберите режим:
@@ -76,7 +75,12 @@ class MenuRouter(
                 2 - С маной
                 3 - Командный
             """.trimIndent())
-            if (choice in 1..3) return choice
+            if (choice == null) {
+                ui.showMessage("Неверный ввод! Введите число от 1 до 3")
+                continue
+            }
+            val modeType = GameModeType.fromChoice(choice)
+            if (modeType != null) return modeType
             ui.showMessage("Неверный выбор! Введите число от 1 до 3")
         }
     }
@@ -92,19 +96,11 @@ class MenuRouter(
         }
     }
 
-    private fun createGameMode(choice: Int?, engine: GameEngine): GameMode {
-        return when (choice) {
-            1 -> ClassicMode(ui, engine)
-            2 -> ManaMode(ui, engine)
-            3 -> TeamMode(ui, engine)
-            else -> error("Неизвестный режим")
+    private fun createGameMode(modeType: GameModeType, engine: GameEngine): GameMode {
+        return when (modeType) {
+            GameModeType.CLASSIC -> ClassicMode(ui, engine)
+            GameModeType.MANA -> ManaMode(ui, engine)
+            GameModeType.TEAM -> TeamMode(ui, engine)
         }
-    }
-
-    private fun modeName(choice: Int?): String = when (choice) {
-        1 -> "Классический"
-        2 -> "С маной"
-        3 -> "Командный"
-        else -> "Классический"
     }
 }
