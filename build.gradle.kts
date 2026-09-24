@@ -19,8 +19,7 @@ dependencies {
     implementation("org.openjfx:javafx-fxml:21")
     implementation("org.openjfx:javafx-graphics:21")
 
-    // PostgreSQL
-    implementation("org.postgresql:postgresql:42.7.2")
+    implementation("org.xerial:sqlite-jdbc:3.45.1.0")
 }
 
 javafx {
